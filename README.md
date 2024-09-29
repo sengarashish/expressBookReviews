@@ -1,4 +1,4 @@
-# expressBookReviews
+# expressBookReviews project by Ashish Sengar for Node.js, Express, Axios demo for IBM coursera
 
 expressBookReviews is a project focused on managing book reviews through RESTful API endpoints, allowing users to register, log in, add reviews, and retrieve book information based on ISBN, author, or title.
 
