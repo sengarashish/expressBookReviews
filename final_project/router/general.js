@@ -7,7 +7,7 @@ const public_users = express.Router();
 
 
 public_users.post("/register", (req,res) => {
-
+  // Register using post
   const username = req.body.username;
   const password = req.body.password;
   if(username&&password){
@@ -30,14 +30,7 @@ public_users.post("/register", (req,res) => {
  
 });
 
-// // Get the book list available in the shop
-// public_users.get('/',async (req, res) => {
-//     await res.send(JSON.stringify(books,null,4));
-   
-//  });
-
-
-// Get the book list available in the shop using async await
+//Get all books route
 public_users.get('/', (req, res) => {
     const getBooks = () => {
         return new Promise((resolve,reject) => {
@@ -51,23 +44,13 @@ public_users.get('/', (req, res) => {
     }).catch((err) =>{
       res.status(500).json({error: "An error occured"});
     });
-      
-    //await res.send(JSON.stringify(books,null,4));
   
 });
 
 
-// // Get book details based on ISBN
-// public_users.get('/isbn/:isbn',async (req, res)=>{
-  
-//   const ISBN = req.params.isbn;
-//   await res.send(books[ISBN]);    
- 
-//  });
-  
-// Get book details based on ISBN using Promises
+// Get book details with  ISBN# 
 public_users.get('/isbn/:isbn', (req, res) =>{
-    
+    //get isbn
     const ISBN = req.params.isbn;
     const booksBasedOnIsbn = (ISBN) => {
         return new Promise((resolve,reject) =>{
@@ -87,15 +70,13 @@ public_users.get('/isbn/:isbn', (req, res) =>{
     }).catch((err)=>{
       res.status(400).json({error:"Book not found"})
     });
-      
-    //await res.send(books[ISBN]);    
+        
    
    });
     
-// Get book details based on author
+// Get book details of author
 public_users.get('/author/:author',async (req, res) => {
 
-  //using promises
   const author = req.params.author;
   const booksBasedOnAuthor = (auth) => {
         return new Promise((resolve,reject) =>{
@@ -104,7 +85,7 @@ public_users.get('/author/:author',async (req, res) => {
             if(filteredbooks>0){
               resolve(filteredbooks);
             }else{
-              reject(new Error("Book not found"));
+              reject(new Error("Book(s) not found"));
             }},1000);
         });
     
@@ -116,30 +97,12 @@ public_users.get('/author/:author',async (req, res) => {
       res.status(400).json({error:"Book not found"})
     });
  
-  //let new_books = {}
-  //const new_author = req.params.author;
-  //let i=1;
-  //for(let bookid in books){
-   //   if(books[bookid].author === new_author ){
-    //    new_books[i++] = books[bookid];
-    //  }
-    //}
-    //await res.send(JSON.stringify(new_books))
   
 });
 
-// Get all books based on title
+// Get all books with title
 public_users.get('/title/:title',async (req, res) => {
   
-  //let new_books = {}
-  //const re_title = req.params.title;
-  //let i = 1;
-  //for(bookid in books){
-    //  if(books[bookid].title === re_title ){
-      //  new_books[i++] = books[bookid]
-      //}
-  //}
-  //await res.send(JSON.stringify(new_books))
 
   const title = req.params.title;
   const booksBasedOnTitle = (booktitle) => {
