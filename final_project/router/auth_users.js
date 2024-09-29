@@ -5,83 +5,62 @@ const regd_users = express.Router();
 
 let users = [];
 
-const isValid = (user)=>{ 
-    let filtered_users = users.filter((user)=> user.username === user);
-    if(filtered_users){
-        return true;
-    }
-    return false;
+const isValid = (username)=>{ 
+  //checks for valid username.All details from the session
+  const userMatches = users.filter((user) => user.username === username);
+  return userMatches.length > 0;
 }
-const authenticatedUser = (username,password)=>{ //returns boolean
-    if(isValid(username)){
-        let filtered_users = users.filter((user)=> (user.username===username)&&(user.password===password));
-        if(filtered_users){
-            return true;
-        }
-        return false;
-       
-    }
-    return false;
-    
 
+const authenticatedUser = (username,password)=>{ 
+  //returns boolean
+  //Checks if the user and pwd matches with details in session
+  console.log(username,password) ;
+  const matchingUsers = users.filter((user) => user.username === username && user.password === password);
+  return matchingUsers.length > 0;
 }
-// register new user
-regd_users.post("/register", (req,res) => {
-    const username = req.body.username;
-    const password = req.body.password;
-    if(username&&password){
-        const present = users.filter((user)=> user.username === username)
-        if(present.length===0){
-            users.push({"username":req.body.username,"password":req.body.password});
-            return res.status(201).json({message:"USer Created successfully"})
-        }
-        else{
-          return res.status(400).json({message:"Already exists"})
-        }
-    }
-    else if(!username && !password){
-      return res.status(400).json({message:"Bad request"})
-    }
-    else if(!username || !password){
-      return res.status(400).json({message:"Check username and password"})
-    }
-  
-   
-  });
 
-//registered user login
+//  use POST method to logic
 regd_users.post("/login", (req,res) => {
-    let user = req.body.username;
-    let pass = req.body.password;
-    if(!authenticatedUser(user,pass)){
-        return res.status(403).json({message:"User not authenticated"})
-    }
+  const username = req.body.username;
+  const password = req.body.password;
 
-    let accessToken = jwt.sign({
-        data: user
-    },'access',{expiresIn:60*60})
-    req.session.authorization = {
-        accessToken
-    }
-    res.send("User logged in Successfully")
- 
+  if (authenticatedUser(username, password)) {
+    let accessToken = jwt.sign({data:password}, "access", {expiresIn: 3600});
+    req.session.authorization = {accessToken,username};
+    return res.status(200).send("User successfully logged in");
+  }
+  else {
+    return res.status(208).json({message: "Invalid username or password"});
+  }
 });
 
-// book review
+//  Add a book review under customer path
 regd_users.put("/auth/review/:isbn", (req, res) => {
-  let userd = req.session.username;
-  let ISBN = req.params.isbn;
-  let details = req.query.review;
-  let rev = {user:userd,review:details}
-  books[ISBN].reviews = rev;
-  return res.status(201).json({message:"Review added successfully"})
-  
+  const isbn = req.params.isbn;
+  const review = req.body.review;
+  const username = req.session.authorization.username;
+  if (books[isbn]) {
+    let book = books[isbn];
+    book.reviews[username] = review;
+    return res.status(200).send("Review successfully posted");
+  }
+  else {
+      return res.status(404).json({message: `ISBN ${isbn} not found`});
+  }
 });
 
+//  Delete a review as logged in user
 regd_users.delete("/auth/review/:isbn", (req, res) => {
-    let ISBN = req.params.isbn;
-    books[ISBN].reviews = {}
-    return res.status(200).json({messsage:"Review has been deleted"})
+  const isbn = req.params.isbn;
+  const username = req.session.authorization.username;
+  if (books[isbn]) {
+    let book = books[isbn];
+    delete book.reviews[username];
+    return res.status(200).send("Review successfully deleted");
+  }
+  else {
+    return res.status(404).json({message: `ISBN ${isbn} not found`});
+  }
 });
 
 module.exports.authenticated = regd_users;
